@@ -7,7 +7,9 @@ const app = express();
 import serviceRouter from "./routes/services.js"
 import bookingRouter from "./routes/booking.js"
 import userRouter from "./routes/users.js"
-import authRouter from "./routes/Auth.js"
+import authRouter from "./routes/Auth.js"; 
+import smallserviceRouter from "./routes/smallservice.js"
+import contentsRouter from "./routes/contents.js"
 // Connection ot mongoodb
 app.use(cors()); 
 app.use(express.json()); 
@@ -34,6 +36,10 @@ app.use("/api/booking", bookingRouter);
 app.use("/api/user",userRouter); 
 //Router for login 
 app.use("/api/login",authRouter); 
+// Router for smallservice
+app.use("/api/smallservice", smallserviceRouter); 
+// Router for content
+app.use("/api/contents", contentsRouter); 
 
 app.use((err,req, res, next) => { 
     const errorStatus = err.status ||500; 

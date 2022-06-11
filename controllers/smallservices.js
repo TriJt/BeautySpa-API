@@ -1,9 +1,9 @@
-import SmallServices from "../models/SmallService";
+import SmallServices from "../models/SmallService.js";
 import Services from "../models/Service.js"; 
 
 /*
     Get all smallservice
-    GET api/service/smallservice
+    GET api/smallservice
 */
 export  const GetSmallServices = async(req,res,next)=>{
     SmallServices.find((err,result) =>{ 
@@ -14,13 +14,13 @@ export  const GetSmallServices = async(req,res,next)=>{
 
 /*
     Get one service with id service
-    GET api/smallservice/:smallserviceId
+    GET api/smallservice/:id
 */ 
 
 
 export const GetSmallServicesById = async(req,res,next) => {
 
-    SmallServices.findById(req.params.smalllServiceId, (err,result)=>{ 
+    SmallServices.findById(req.params.id, (err,result)=>{ 
         if(err) return next(err)
         res.json(result); 
     })
@@ -33,34 +33,67 @@ when post smallservice, id smallservice will be add into service
 */
 
 export const CreatSmallService = async(req, res, next) =>{ 
-    SmallServices.create(req.body, (err,post) => { 
-        if(err) return next(err)
-        res.json(post)
-    })
+    const ServiceId = req.params.serviceid; 
+    const newSmallService = new SmallServices( req.body);
+    try{ 
+        const saveSmallService = await newSmallService.save(); 
+        try {
+            await Services.findByIdAndUpdate(ServiceId, {
+              $push: { smallservice: saveSmallService._id},
+            });
+          } catch (err) {   
+            next(err);
+          }
+          res.status(200).json(saveSmallService);
+    }catch(err){ 
+        next(err)
+    }
+   
 }
 
 
 
 /* 
-Put a service in database
-PUT api/service
+Put a smallservice in database
+PUT api/smallservice/:id
 */
 
-export const UpdateService = async(req, res, next) => { 
-    Services.findByIdAndUpdate(req.params.serviceId, req.body, (err, post)=> { 
-        if(err) return next(err)
-        res.json(post)
-    })
+export const UpdateSmallService = async(req, res, next) => {
+    try{ 
+        const updateSmall = await SmallServices.findByIdAndUpdate(req.params.id, 
+            {$set: req.body}, 
+            {new: true}); 
+        res.status(200).json(updateSmall)
+    } 
+    catch(err){ 
+        next(err); 
+    }
+    
 }
 
 /*
-Delete service in database when the spa don't service again
-DELETE api/service/:serviceId  
+Delete smallservice in database 
+DELETE api/smallservice/:id 
 */ 
 
-export const DeleteServiceById = async(req, res, next) => { 
-    Services.findByIdAndDelete(req.params.serviceId, req.body, (err, post)=> { 
-        if(err) return next(err)
-        res.json(post)
-    })
+export const DeleteSmallServiceById = async(req, res, next) => { 
+    try{ 
+        // xóa smallservice 
+        await  SmallServices.findByIdAndDelete(req.params.id); 
+        // tìm id smallservice trong service và xóa nó đi
+        try{ 
+            const service = await Services.findOne({smallservice: req.params.id}); 
+            if(service !=null)
+                { 
+                    await Services.findByIdAndUpdate(service.id, { 
+                       $pull: {smallservice: req.params.id} 
+                    })
+                }
+        }catch(err){
+            next(err)
+        }
+    }
+    catch(err){ 
+        next(err); 
+    }
 }
