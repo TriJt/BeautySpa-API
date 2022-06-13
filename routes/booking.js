@@ -5,7 +5,6 @@ createBooking as create,
 updateBooking as update , 
 deteleBookingById as deletes} from "../controllers/booking.js"; 
 
-
 const router = express.Router(); 
 
 //router for get all Bookings
